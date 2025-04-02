@@ -1,0 +1,23 @@
+#include <iostream>
+#include <string>
+
+int main() {
+    // Declare 9 string arrays with specified sizes
+    std::string array1[1];
+    std::string array2[4];
+    std::string array3[6];
+    std::string array4[8];
+    std::string array5[9];
+    std::string array6[8];
+    std::string array7[6];
+    std::string array8[4]; 
+    std::string array9[1];
+    
+    array3[5] = "Entrance";
+    string userIn; 
+    
+    cout << ""
+    
+
+    return 0;
+}

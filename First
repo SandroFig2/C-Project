@@ -13,11 +13,321 @@ int main() {
     std::string array8[4]; 
     std::string array9[1];
     
+    // Initialize with empty spaces
+    for (int i = 0; i < 1; i++) array1[i] = ".";
+    for (int i = 0; i < 4; i++) array2[i] = ".";
+    for (int i = 0; i < 6; i++) array3[i] = ".";
+    for (int i = 0; i < 8; i++) array4[i] = ".";
+    for (int i = 0; i < 9; i++) array5[i] = ".";
+    for (int i = 0; i < 8; i++) array6[i] = ".";
+    for (int i = 0; i < 6; i++) array7[i] = ".";
+    for (int i = 0; i < 4; i++) array8[i] = ".";
+    for (int i = 0; i < 1; i++) array9[i] = ".";
+    
+    // Set special locations
     array3[5] = "Entrance";
-    string userIn; 
+    array6[3] = "Pickaxe"; // Place the pickaxe in the grid
+    array5[0] = "Blue Jewel"; // Place the Blue Jewel
+    array7[5] = "Red Jewel"; // Place the Red Jewel
     
-    cout << ""
+    // Place temporary barriers adjacent to edges of the grid
+    array2[0] = "Barrier";  // Left edge of row 2
+    array4[7] = "Barrier";  // Right edge of row 4
+    array7[0] = "Barrier";  // Left edge of row 7 - will become altar when destroyed
+    array8[3] = "Barrier";  // Right edge of row 8 - will become escape hatch when destroyed
     
-
+    // Place traps throughout the grid
+    array2[2] = "Trap";
+    array4[2] = "Trap";
+    array5[6] = "Trap";
+    array7[4] = "Trap";
+    
+    // Player position - starting at the entrance
+    int playerRow = 3;    // Array index is 0-based, so this is the 4th array (array3)
+    int playerCol = 5;
+    
+    // Player stats
+    int playerHP = 5;     // Player hit points
+    bool hasPickaxe = false;
+    int pickaxeDurability = 0; // Pickaxe durability, initialized to 0 (no pickaxe)
+    bool hasBlueJewel = false; // Blue Jewel status
+    bool hasRedJewel = false;  // Red Jewel status
+    bool hasPurpleJewel = false; // Purple Jewel status
+    
+    bool gameRunning = true;
+    std::string userInput;
+    
+    // Game loop
+    while (gameRunning) {
+        // Display current position and player stats
+        std::cout << "You are at position: Row " << playerRow + 1 << ", Column " << playerCol + 1 << std::endl;
+        std::cout << "HP: " << playerHP << "/5" << std::endl;
+        
+        // Check if player is out of health
+        if (playerHP <= 0) {
+            std::cout << "\n*********************\n";
+            std::cout << "You have fallen in the dungeon...\n";
+            std::cout << "GAME OVER\n";
+            std::cout << "*********************\n";
+            gameRunning = false;
+            break;
+        }
+        
+        // Check for escape hatch
+        if (playerRow == 7 && playerCol == 3 && array8[3] == "Escape") {
+            std::cout << "You stand before the escape hatch. Daylight streams in from above.\n";
+            std::cout << "Would you like to leave the dungeon now? (Y/N): ";
+            std::string escapeChoice;
+            std::cin >> escapeChoice;
+            
+            if (escapeChoice == "Y" || escapeChoice == "y") {
+                std::cout << "\n*********************\n";
+                std::cout << "You escaped the dungeon!\n";
+                
+                // Check jewel status for different endings
+                if (hasPurpleJewel) {
+                    std::cout << "You escaped with the legendary Purple Jewel! The ultimate victory!\n";
+                } else if (hasBlueJewel && hasRedJewel) {
+                    std::cout << "You escaped with both the Blue and Red Jewels! Great victory!\n";
+                } else if (hasBlueJewel || hasRedJewel) {
+                    std::cout << "You escaped with one of the jewels. Good job!\n";
+                } else {
+                    std::cout << "You escaped, but didn't find any jewels. Try again to find the hidden treasures!\n";
+                }
+                
+                std::cout << "*********************\n";
+                gameRunning = false;
+                break;
+            } else {
+                std::cout << "You decide to continue exploring the dungeon.\n";
+            }
+        }
+        
+        // Check current location for items, traps, and altar
+        std::string* currentArray = nullptr;
+        switch(playerRow) {
+            case 0: currentArray = array1; break;
+            case 1: currentArray = array2; break;
+            case 2: currentArray = array3; break;
+            case 3: currentArray = array4; break;
+            case 4: currentArray = array5; break;
+            case 5: currentArray = array6; break;
+            case 6: currentArray = array7; break;
+            case 7: currentArray = array8; break;
+            case 8: currentArray = array9; break;
+        }
+        
+        // Check if player found items or is at altar
+        if (currentArray != nullptr && playerCol < 9) {
+            // Check for pickaxe
+            if (currentArray[playerCol] == "Pickaxe") {
+                std::cout << "You found a pickaxe! It has been added to your inventory.\n";
+                std::cout << "The pickaxe looks sturdy enough to break through 3 barriers before it breaks.\n";
+                hasPickaxe = true;
+                pickaxeDurability = 3; // Set pickaxe durability to 3
+                currentArray[playerCol] = "."; // Remove pickaxe from grid
+            }
+            // Check for Blue Jewel
+            else if (currentArray[playerCol] == "Blue Jewel") {
+                std::cout << "You found a Blue Jewel! It shimmers with an ethereal light.\n";
+                std::cout << "The jewel has been added to your inventory.\n";
+                hasBlueJewel = true;
+                currentArray[playerCol] = "."; // Remove Blue Jewel from grid
+            }
+            // Check for Red Jewel
+            else if (currentArray[playerCol] == "Red Jewel") {
+                std::cout << "You found a Red Jewel! It pulses with a warm glow.\n";
+                std::cout << "The jewel has been added to your inventory.\n";
+                hasRedJewel = true;
+                currentArray[playerCol] = "."; // Remove Red Jewel from grid
+            }
+            // Check for altar
+            else if (currentArray[playerCol] == "Altar") {
+                if (hasBlueJewel && hasRedJewel && !hasPurpleJewel) {
+                    std::cout << "You stand before an ancient altar with two gemstone-shaped indentations.\n";
+                    std::cout << "Would you like to place the Red and Blue Jewels on the altar? (Y/N): ";
+                    std::string altarChoice;
+                    std::cin >> altarChoice;
+                    
+                    if (altarChoice == "Y" || altarChoice == "y") {
+                        std::cout << "You place the jewels on the altar. They begin to glow intensely,\n";
+                        std::cout << "floating in the air and spinning around each other.\n";
+                        std::cout << "In a flash of purple light, they merge into a single, magnificent Purple Jewel!\n";
+                        std::cout << "The Purple Jewel floats down into your hands. It radiates immense power.\n";
+                        
+                        hasBlueJewel = false;
+                        hasRedJewel = false;
+                        hasPurpleJewel = true;
+                    } else {
+                        std::cout << "You decide not to place the jewels on the altar for now.\n";
+                    }
+                } else if (hasPurpleJewel) {
+                    std::cout << "The altar is quiet now, having fulfilled its purpose.\n";
+                } else {
+                    std::cout << "You stand before an ancient altar with two gemstone-shaped indentations.\n";
+                    std::cout << "Perhaps it requires specific items to activate...\n";
+                }
+            }
+            // Check for trap
+            else if (currentArray[playerCol] == "Trap") {
+                std::cout << "You stepped on a trap! Sharp spikes emerge from the floor, causing damage.\n";
+                playerHP--;
+                std::cout << "You lose 1 HP. Current HP: " << playerHP << "/5\n";
+                currentArray[playerCol] = "."; // Trap is triggered and disappears
+            }
+        }
+        
+        // Display inventory
+        std::cout << "Inventory: ";
+        bool hasItems = false;
+        
+        if (hasPickaxe) {
+            std::cout << "Pickaxe (Durability: " << pickaxeDurability << "/3)";
+            hasItems = true;
+        }
+        
+        if (hasBlueJewel) {
+            if (hasItems) std::cout << ", ";
+            std::cout << "Blue Jewel";
+            hasItems = true;
+        }
+        
+        if (hasRedJewel) {
+            if (hasItems) std::cout << ", ";
+            std::cout << "Red Jewel";
+            hasItems = true;
+        }
+        
+        if (hasPurpleJewel) {
+            if (hasItems) std::cout << ", ";
+            std::cout << "Purple Jewel";
+            hasItems = true;
+        }
+        
+        if (!hasItems) {
+            std::cout << "Empty";
+        }
+        std::cout << std::endl;
+        
+        // Get user input
+        std::cout << "Enter direction (N, S, E, W) or Q to quit: ";
+        std::cin >> userInput;
+        
+        // Save previous position for checking barriers
+        int prevRow = playerRow;
+        int prevCol = playerCol;
+        
+        // Handle movement
+        if (userInput == "N" || userInput == "n") {
+            if (playerRow > 0) playerRow--;
+            else std::cout << "You see a wall in that direction which cannot be destroyed.\n";
+        }
+        else if (userInput == "S" || userInput == "s") {
+            if (playerRow < 8) playerRow++;
+            else std::cout << "You see a wall in that direction which cannot be destroyed.\n";
+        }
+        else if (userInput == "E" || userInput == "e") {
+            // Check array bounds based on current row
+            int maxCol = 0;
+            switch(playerRow) {
+                case 0: maxCol = 0; break;
+                case 1: maxCol = 3; break;
+                case 2: maxCol = 5; break;
+                case 3: maxCol = 7; break;
+                case 4: maxCol = 8; break;
+                case 5: maxCol = 7; break;
+                case 6: maxCol = 5; break;
+                case 7: maxCol = 3; break;
+                case 8: maxCol = 0; break;
+            }
+            
+            if (playerCol < maxCol) playerCol++;
+            else std::cout << "You see a wall in that direction which cannot be destroyed.\n";
+        }
+        else if (userInput == "W" || userInput == "w") {
+            if (playerCol > 0) playerCol--;
+            else std::cout << "You see a wall in that direction which cannot be destroyed.\n";
+        }
+        else if (userInput == "Q" || userInput == "q") {
+            gameRunning = false;
+            std::cout << "Thanks for playing!\n";
+        }
+        else {
+            std::cout << "Invalid input. Use N, S, E, W for movement or Q to quit.\n";
+        }
+        
+        // Check if player hit a barrier
+        std::string* newArray = nullptr;
+        switch(playerRow) {
+            case 0: newArray = array1; break;
+            case 1: newArray = array2; break;
+            case 2: newArray = array3; break;
+            case 3: newArray = array4; break;
+            case 4: newArray = array5; break;
+            case 5: newArray = array6; break;
+            case 6: newArray = array7; break;
+            case 7: newArray = array8; break;
+            case 8: newArray = array9; break;
+        }
+        
+        if (newArray != nullptr && playerCol < 9 && newArray[playerCol] == "Barrier") {
+            if (hasPickaxe && pickaxeDurability > 0) {
+                std::cout << "You've encountered a barrier! You have a pickaxe with " << pickaxeDurability;
+                std::cout << " durability left. Would you like to destroy it? (Y/N): ";
+                std::string destroyChoice;
+                std::cin >> destroyChoice;
+                
+                if (destroyChoice == "Y" || destroyChoice == "y") {
+                    // Reduce pickaxe durability
+                    pickaxeDurability--;
+                    
+                    // Special case for the barrier at array2[0]
+                    if (playerRow == 1 && playerCol == 0) {
+                        std::cout << "Destroying the barrier causes more rubble to fall than expected, you narrowly avoid the brunt of it, however some still manages to scrape you. Take 1 Damage.\n";
+                        playerHP--;
+                        std::cout << "Current HP: " << playerHP << "/5\n";
+                        newArray[playerCol] = "."; // Remove barrier
+                    }
+                    // Special case for the barrier at array7[0] - becomes altar
+                    else if (playerRow == 6 && playerCol == 0) {
+                        std::cout << "As you destroy the barrier, you reveal an ancient stone altar!\n";
+                        std::cout << "It has intricate carvings and two gemstone-shaped indentations.\n";
+                        newArray[playerCol] = "Altar"; // Convert the barrier to an altar
+                    }
+                    // Special case for the barrier at array8[3] - becomes escape hatch
+                    else if (playerRow == 7 && playerCol == 3) {
+                        std::cout << "As you break through this barrier, you can see daylight! You've found an escape hatch!\n";
+                        newArray[playerCol] = "Escape"; // Convert the barrier to an escape hatch
+                    } else {
+                        std::cout << "You use your pickaxe to destroy the barrier and clear the path.\n";
+                        newArray[playerCol] = "."; // Remove other barriers
+                    }
+                    
+                    // Check if pickaxe broke
+                    if (pickaxeDurability <= 0) {
+                        std::cout << "Your pickaxe breaks after destroying the barrier!\n";
+                        hasPickaxe = false;
+                    } else {
+                        std::cout << "Your pickaxe has " << pickaxeDurability << " uses left.\n";
+                    }
+                } else {
+                    std::cout << "You decide not to destroy the barrier and go back to your previous position.\n";
+                    playerRow = prevRow; // Go back to previous position
+                    playerCol = prevCol;
+                }
+            } else {
+                std::cout << "You've encountered a barrier! ";
+                if (hasPickaxe) {
+                    std::cout << "Your pickaxe is broken and can't be used anymore. ";
+                } else {
+                    std::cout << "You need a pickaxe to destroy it. ";
+                }
+                std::cout << "Going back to previous position.\n";
+                playerRow = prevRow; // Go back to previous position
+                playerCol = prevCol;
+            }
+        }
+    }
+    
     return 0;
 }
